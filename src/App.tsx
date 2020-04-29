@@ -1,110 +1,100 @@
 import * as React from 'react';
+import { Result } from 'antd';
 
-import { AppSitemap, AppState, ProjectEntry, Project } from './typings';
+import { AppState, Config, GroupEntry, AppStore } from './typings';
 
-import { Result, Spin } from 'antd';
 import { AppLayout } from './ui/Layout/Layout';
-import { parseHistoryParams, useNav } from './util';
+import { parseHistoryParams, toMapById } from './util';
 import { Store } from './store/store';
 
 export type AppLoaderProps = {
-	activeProject?: string;
-	sitemap?: Array<Project & {
-		entries: Array<ProjectEntry | string>;
-	}>;
+	config?: Config;
 };
 
-const fetchedEndpoint = {} as {
-	[url:string]: ProjectEntry | null;
+const groupEntryCache = {} as {
+	[url:string]: GroupEntry | null;
 };
 
-export function App(props: AppLoaderProps) {
-	const [rev, updateState] = React.useState(0);
-	const forceUpdate = React.useCallback(() => { updateState(rev + 1); }, [rev]);
+export function App({config}: AppLoaderProps) {
+	const state = React.useMemo((): AppState => {
+		const value: AppState = {
+			loading: true,
+			
+			search: '',
+			queryString: '',
+			
+			activeGroup: config?.active_group || null,
+			activeGroupEntries: [],
+			activeEndpoint: null,
 
-	if (!props.sitemap) {
-		return <Result status="error" title="Sitemap not defined"/>;
+			groups: toMapById(config?.groups || []),
+			projects: toMapById(config?.projects || []),
+			accessRights: toMapById(config?.rights || []),
+		};
+
+		return {
+			...value,
+			...parseHistoryParams(value),
+		}
+	}, []);
+
+	if (!config || !config.groups || !config.groups.length) {
+		console.warn('Brocked state:', state);
+		return <Result status="error" title="Broken config (no groups)" />;
 	}
 
-	const sitemap = fetchSitemap(props.sitemap, forceUpdate);
-
-	return (
-		<AppReady
-			key={rev}
-			activeProject={sitemap.find(v => v.id === props.activeProject)}
-			sitemap={sitemap}
-		/>
-	);
+	return <AppReady state={state} />;
 }
 
-function AppReady(props: {activeProject?: Project, sitemap: AppSitemap}) {
-	const {
-		sitemap,
-		activeProject,
-	 } = props;
-	const initialState = React.useMemo((): AppState => {
-		const state = {
-			search: '',
-			activeProject,
-			activeEndpoint: '',
-			sitemap,
-			...parseHistoryParams(sitemap),
-		};
-		state.search = new URLSearchParams(state.queryString).get('search') || '';
-		return state;
-	}, []);
-	const [state, setState] = React.useState(initialState);
+function AppReady(props: {state: AppState}) {
+	const [state, setState] = React.useState(props.state);
+	const store: AppStore = {
+		state,
+		updateState: React.useCallback(function () {
+			if (arguments.length === 2) {
+				setState({
+					...state,
+					[arguments[0]]: arguments[1],
+				});
+			} else {
+				setState({
+					...state,
+					...Object(arguments[0]),
+				});
+			}
+		}, [state]),
+	};
 
 	useHistory(state);
 	useHashChange(() => {
 		setState({
 			...state,
-			...parseHistoryParams(sitemap),
+			...parseHistoryParams(state),
 		});
-	}, [state, sitemap]);
-	useAutoScroll();
+	}, [state]);
+	useGroupEntryAutoload(store);
+	useAutoScroll(state.loading);
 	
 	return (
-		<Store.Provider value={{
-			state,
-			updateState: (key, value) => {
-				setState({
-					...state,
-					[key]: value,
-				});
-			},
-		}}>
-			{sitemap.length ? <AppLayout/> : <Loading/>}
+		<Store.Provider value={store}>
+			<AppLayout/>
 		</Store.Provider>
-	);
-}
-
-function Loading() {
-	return (
-		<div style={{
-			display: 'flex',
-			width: '100%',
-			height: '100%',
-			alignItems: 'center',
-			justifyContent: 'center',
-		}}>
-			<Spin size="large"/>
-		</div>
 	);
 }
 
 function useHistory(state: AppState) {
 	React.useEffect(() => {
 		const {
-			activeProject,
+			groups,
+			activeGroup,
 			activeEndpoint,
 			queryString,
 			search,
 		} = state
 
 		const pid = setTimeout(() => {
-			let hash = activeProject ? activeProject.id : '';
-			let title = activeProject?.name
+			let hash = activeGroup || '';
+			let title = groups[activeGroup!]?.name
 			
 			if (activeEndpoint) {
 				hash += `:${activeEndpoint}`;
@@ -139,50 +129,58 @@ function useHashChange(handle: () => void, deps: any[]) {
 
 }
 
-function useAutoScroll() {
+function useAutoScroll(loading: boolean) {
 	const firstScroll = React.useRef(true);
+	
 	React.useEffect(() => {
+		if (loading) {
+			return;
+		}
+
 		const elem = document.querySelector(`[id="${decodeURIComponent(window.location.hash)}"]`);
+		
 		requestAnimationFrame(() => {
 			elem && elem.scrollIntoView({behavior: firstScroll.current ? 'auto' : 'smooth'});
 			firstScroll.current = false;
 		});
-	}, [window.location.hash]);
+	}, [loading, window.location.hash]);
 }
 
-function fetchSitemap(sitemap: AppSitemap, forceUpdate: () => void) {
-	return sitemap.reduce((list, item) => {
-		const entries = [] as ProjectEntry[];
-		let loaded = true;
+function useGroupEntryAutoload({state, updateState}: AppStore) {
+	const [rev, setRev] = React.useState(0);
+	const forceUpdate = React.useCallback(() => { setRev(rev + 1); }, [rev]);
+	const group = state.groups[state.activeGroup!];
 
-		item.entries.forEach((e) => {
-			if (typeof e === 'string') {
-				const cache = fetchedEndpoint[e];
-				
-				if (cache === void 0) {
-					loaded = false;
-					fetchedEndpoint[e] = null;
-					fetch(e).then(r => r.json()).then(json => {
-						fetchedEndpoint[e] = json;
-						forceUpdate();
-					});
-				} else if (cache === null) {
-					loaded = false;
-				} else {
-					entries.push(cache);
-				}
-			} else {
-				entries.push(e);
-			}
-		});
+	if (!group) {
+		return;
+	}
 
-		if (loaded) {
-			list.push({
-				...item,
-				entries,
+	let loading = false;
+	const entries = group.entries.map((entry) => {
+		const cache = groupEntryCache[entry];
+		
+		if (cache === void 0) {
+			loading = true;
+			groupEntryCache[entry] = null;
+			fetch(entry).then(r => r.json()).then(json => {
+				groupEntryCache[entry] = json;
+				forceUpdate();
+			});
+		} else if (cache === null) {
+			loading = true;
+		}
+		
+		return cache!;
+	});
+
+	if (loading !== state.loading) {
+		if (loading) {
+			updateState({ loading: true });
+		} else {
+			updateState({
+				loading: false,
+				activeGroupEntries: entries,
 			});
 		}
-
-		return list;
-	}, [] as Project[])
+	}
 }

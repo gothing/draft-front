@@ -7,8 +7,8 @@ export function Header() {
 	const {
 		state: {
 			search,
-			activeProject,
-			sitemap,
+			activeGroup,
+			groups,
 		},
 		updateState,
 	} = useAppStore();
@@ -28,16 +28,14 @@ export function Header() {
 					<Menu
 						theme="dark"
 						mode="horizontal"
-						defaultSelectedKeys={activeProject && [activeProject.id]}
+						defaultSelectedKeys={activeGroup ? [activeGroup] : void 0}
 					>{
-						sitemap.map((project) => (
+						Object.values(groups).map((group) => (
 							<Menu.Item
-								key={project.id}
-								onClick={() => {
-									nav(getBaseURL(project));
-								}}
+								key={group!.id}
+								onClick={() => { nav(getBaseURL(group!)); }}
 							>
-								{project.name}
+								{group!.name}
 							</Menu.Item>
 						))
 					}</Menu>

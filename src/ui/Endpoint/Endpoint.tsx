@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { Card, Result, Tree, Breadcrumb, Typography, Space } from 'antd';
+import { Result, Breadcrumb, Typography, Space } from 'antd';
 import { useAppStore } from '../../store/store';
-import { ProjectEntry } from '../../typings';
+import { GroupEntry } from '../../typings';
 import { Status } from '../Status/Status';
 import { EndpointCase } from './EndpointCase';
-import { getProjectEntryKey, getCaseURL } from '../../util';
+import { getGroupEntryKey, getCaseURL } from '../../util';
 import Paragraph from 'antd/lib/typography/Paragraph';
 
 export type Endpoint = {
@@ -13,35 +13,48 @@ export type Endpoint = {
 
 export function Endpoint({id}: Endpoint) {
 	const {
-		state: {activeProject},
+		state: {
+			groups,
+			projects,
+			activeGroup,
+			activeGroupEntries,
+		},
 	} = useAppStore();
 	const entry = React.useMemo(() => {
-		let result = null as ProjectEntry | null;
-		activeProject && activeProject.entries.some(function find(e) {
-			if (getProjectEntryKey(e) === id) {
-				result = e;
+		let result = null as GroupEntry | null;
+		
+		activeGroupEntries.some(function find(entry) {
+			if (getGroupEntryKey(entry) === id) {
+				result = entry;
 				return true;
 			}
 
-			return e.entries.some(find);
+			return entry.entries.some(find);
 		});
+
 		return result;
-	}, [activeProject, id]);
+	}, [activeGroupEntries, id]);
 
 	if (!entry) {
+		return <Result status="error" title={<>Ошибка: «<b>{id}</b>» — не найден</>} />;
+	}
+
+	const group = groups[activeGroup!];
+	if (!group) {
 		return <Result
 			status="error"
-			title={`Ошибка: «${id}» — не найден`}
+			title={<>Ошибка: «<b>{activeGroup || '<<undefined>>'}</b>» — группа не найдена</>}
 		/>;
 	}
 
 	const scheme = entry.scheme!;
+	const project = projects[scheme.project!];
 
 	return (
 		<>
 			<Breadcrumb style={{marginBottom: 20}}>
-				<Breadcrumb.Item>{activeProject?.name}</Breadcrumb.Item>
-				{scheme.project && <Breadcrumb.Item>{scheme.project}</Breadcrumb.Item>}
+				<Breadcrumb.Item>{group.name}</Breadcrumb.Item>
+				{project && <Breadcrumb.Item>{project.name}</Breadcrumb.Item>}
 				<Breadcrumb.Item>{scheme.name}</Breadcrumb.Item>
 			</Breadcrumb>
 
@@ -52,7 +65,7 @@ export function Endpoint({id}: Endpoint) {
 			{scheme.cases.length > 1 && <ul>
 				{scheme.cases.map((c, i) => (
 					<li key={i}>
-						<a href={getCaseURL(activeProject!, entry, c)}>{c.name}</a>&nbsp;
+						<a href={getCaseURL(group, entry, c)}>{c.name}</a>&nbsp;
 						<Status name={c.status} badge/> 
 					</li>
 				))}
@@ -60,7 +73,12 @@ export function Endpoint({id}: Endpoint) {
 			
 			<Space direction="vertical" style={{width: '100%'}}>
 				{scheme.cases.map((c, i) => (
-					<EndpointCase key={i} project={activeProject!} entry={entry} value={c}/>
+					<EndpointCase
+						key={`${group.id}-${entry.name}-${c.name}-${i}`}
+						group={group}
+						entry={entry}
+						value={c}
+					/>
 				))}
 			</Space>
 		</>

@@ -7,10 +7,13 @@ export function EndpointAll() {
 	const {
 		state: {
 			search,
-			activeProject,
+			groups,
+			activeGroup,
+			activeGroupEntries,
 		},
 	} = useAppStore();
-	const rootEntries = activeProject?.entries.flatMap(e => e.entries) || [];
+	const group = groups[activeGroup!]!;
+	const rootEntries = activeGroupEntries.flatMap(e => e.entries) || [];
 	
 	let isEmpty = true;
 	const nodes = rootEntries.map(function render(e) {
@@ -32,7 +35,7 @@ export function EndpointAll() {
 
 			return (
 				<Tree.TreeNode
-					key={getBaseURL(activeProject!, e)}
+					key={getBaseURL(group, e)}
 					title={<>
 						<a>{name || e.name}</a>
 						<span> — {descr || e.scheme!.name}</span>

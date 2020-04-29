@@ -6,7 +6,7 @@ import * as serviceWorker from './serviceWorker';
 import 'antd/dist/antd.css';
 
 render(
-	<App {...Object((globalThis as any).GODRAFT_CONFIG)} />,
+	<App config={Object((globalThis as any).GODRAFT_CONFIG)} />,
 	document.getElementById('root')
 );
 

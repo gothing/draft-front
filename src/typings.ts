@@ -1,36 +1,93 @@
-export type Project = {
+export type Config = {
+	front_url: string;
+	active_group: string;
+	groups: GroupConfig[];
+	projects: ProjectConfig[];
+	rights: AccessConfig[];
+};
+
+export type GroupConfig = {
 	id: string;
 	name: string;
-	entries: ProjectEntry[];
-}
+	entries: string[];
+};
+
+export type ProjectConfig = {
+	id: string;
+	name: string;
+	descrition: string;
+	host: string;
+	host_rc: string;
+	host_dev: string;
+};
+
+export type AccessConfig = {
+	id: string;
+	name: string;
+	descrition: string;
+	badge: string;
+	extra: AccessExtraConfig[];
+};
+
+export type AccessExtraConfig = {
+	name: string;
+	descrition: string;
+	headers: AccessExtraItemValue;
+	params: AccessExtraItemValue;
+};
+
+export type AccessExtraItemValue = {
+	value: any;
+	reflect: ReflectItem;
+};
 
 export type AppState = {
-	search: string;
-	sitemap: AppSitemap;
-	activeProject?: Project;
-	activeEndpoint: string;
-	queryString: string;
-};
+	loading: boolean;
 
-export type AppSitemap = Project[];
+	search: string;
+	queryString: string;
+
+	groups: {
+		[id:string]: GroupConfig | undefined;
+	};
+
+	projects: {
+		[id:string]: ProjectConfig | undefined;
+	};
+
+	accessRights: {
+		[id:string]: AccessConfig | undefined;
+	};
+
+	activeGroup: string | null;
+	activeGroupEntries: GroupEntry[];
+	activeEndpoint: string | null;
+};
 
 export type AppStore = {
-	state: AppState;
-	updateState: <K extends keyof AppState>(key: K, value: AppState[K]) => void,
+	state: Readonly<AppState>;
+	updateState: AppStoreUpdateState,
 };
 
-export type ProjectEntry = {
+export interface AppStoreUpdateState {
+	(patch: Partial<AppState>): void;
+	<K extends keyof AppState>(key: K, value: AppState[K]): void;
+}
+
+export type GroupEntry = {
 	type: string;
 	name: string;
 	scheme: JSONScheme | null;
-	entries: ProjectEntry[];
+	entries: GroupEntry[];
 };
 
 export type JSONScheme = {
 	name: string;
 	project: string;
 	description: string;
-	detail: {[status:string]: JSONSchemeDetail};
+	detail: {
+		[status:string]: JSONSchemeDetail;
+	};
 	cases: SchemeCase[];
 };
 
@@ -42,7 +99,7 @@ export type SchemeCase = {
 	method: string;
 	params: object;
 	body: object;
-}
+};
 
 export type JSONSchemeDetail = {
 	access: string;
@@ -52,11 +109,15 @@ export type JSONSchemeDetail = {
 
 export type JSONSchemeRequest = {
 	method: string;
-	params: { [name:string]: ReflectItem };
+	params: {
+		[name:string]: ReflectItem;
+	};
 };
 
 export type JSONSchemeResponse = {
-	body: { [name:string]: ReflectItem };
+	body: {
+		[name:string]: ReflectItem;
+	};
 };
 
 export type ReflectItem = {
@@ -71,4 +132,6 @@ export type ReflectItem = {
 	nested: ReflectItem[];
 };
 
-export type ReflectItemMap = {[key:string]: ReflectItem};
+export type ReflectItemMap = {
+	[key:string]: ReflectItem;
+};

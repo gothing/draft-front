@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { ProjectEntry, Project, SchemeCase } from './typings';
+import { SchemeCase, AppState, GroupEntry, GroupConfig } from './typings';
 import { MatchResult, match as fuzzyMatch } from 'fuzzy';
 import { useAppStore } from './store/store';
 
-export function getProjectEntryKey(entry: ProjectEntry) {
+export function getGroupEntryKey(entry: GroupEntry) {
 	let key = entry.name;
 	
 	if (entry.scheme && entry.scheme.project) {
@@ -49,7 +49,10 @@ export function copyToClipboard(val: string) {
 export function useNav() {
 	const { updateState } = useAppStore();
 	const nav = React.useCallback((val) => {
-		updateState('search', '');
+		updateState({
+			search: '',
+			queryString: '',	
+		})
 		window.location.hash = val;
 	}, [updateState]);
 	
@@ -78,15 +81,15 @@ export function fuzzyHL(value: string, pattern: string) {
 	return result ? <span dangerouslySetInnerHTML={{__html: result.rendered}}/> : null;
 }
 
-export function getBaseURL(project: Project, entry?: ProjectEntry) {
-	return `#${project.id}${entry ? `:${entry.scheme?.project || ''}${entry.name}` : ``}`;
+export function getBaseURL(group: GroupConfig, entry?: GroupEntry) {
+	return `#${group.id}${entry ? `:${entry.scheme?.project || ''}${entry.name}` : ``}`;
 }
 
-export function getCaseURL(project: Project, entry: ProjectEntry, c: SchemeCase) {
-	return `${getBaseURL(project, entry)}?case=${c.name}`;
+export function getCaseURL(group: GroupConfig, entry: GroupEntry, c: SchemeCase) {
+	return `${getBaseURL(group, entry)}?case=${c.name}`;
 }
 
-export function parseHistoryParams(sitemap: Project[]) {
+export function parseHistoryParams(state: AppState) {
 	const [
 		_,
 		id,
@@ -95,8 +98,15 @@ export function parseHistoryParams(sitemap: Project[]) {
 	] = window.location.hash.match(/^#?([\w-]+)(?::([^?]+))?(?:\?(.*))?/i) || [];
 
 	return {
-		activeProject: sitemap.find((p) => p.id === id) || sitemap[0],
+		activeGroup: state.groups[id] ? id : Object.keys(state.groups)[0],
 		activeEndpoint: endpoint || '',
 		queryString: queryString || '',
 	};
+}
+
+export function toMapById<T>(list: {[id:string]: any}[]): T {
+	return list.reduce((map, item) => {
+		map[item.id] = item;
+		return map;
+	}, {}) as T;
 }

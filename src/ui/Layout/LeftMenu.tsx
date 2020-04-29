@@ -2,21 +2,25 @@ import * as React from 'react';
 import { Menu, Divider } from 'antd';
 import { SelectParam } from 'antd/lib/menu';
 import { useAppStore } from '../../store/store';
-import { getProjectEntryKey } from '../../util';
+import { getGroupEntryKey } from '../../util';
 
 export function LeftMenu() {
 	const {
 		state: {
-			activeProject,
+			activeGroupEntries,
 			activeEndpoint,
 		},
 		updateState,
 	} = useAppStore();
 	const handleSelect = React.useCallback((param: SelectParam) => {
-		updateState('activeEndpoint', param.key);
+		updateState({
+			search: '',
+			queryString: '',
+			activeEndpoint: param.key,
+		});
 	}, [updateState]);
 
-	const rootEntries = activeProject?.entries.flatMap(r => r.entries) || [];
+	const rootEntries = activeGroupEntries.flatMap(r => r.entries) || [];
 	const openKeys = [] as string[];
 	
 	const menuItems = rootEntries.map(function render(e) {
@@ -30,7 +34,7 @@ export function LeftMenu() {
 		} else if (e.type === 'E') {
 			return (
 				<Menu.Item
-					key={getProjectEntryKey(e)}
+					key={getGroupEntryKey(e)}
 					title={e.scheme!.description || e.scheme!.name}
 				>
 					{e.scheme!.name}
@@ -47,7 +51,7 @@ export function LeftMenu() {
 		<Menu
 			mode="inline"
 			defaultOpenKeys={openKeys}
-			defaultSelectedKeys={[activeEndpoint]}
+			defaultSelectedKeys={activeEndpoint ? [activeEndpoint] : void 0}
 			style={{ height: '100%', borderRight: 0 }}
 			onSelect={handleSelect}
 		>

@@ -1,56 +1,49 @@
 import * as React from 'react';
-import { Tag, Card, message, Divider } from 'antd';
-import { LinkOutlined } from '@ant-design/icons';
+import { Tag, Card, message, Dropdown, Menu } from 'antd';
+import { LinkOutlined, SafetyOutlined } from '@ant-design/icons';
 import { Status } from '../Status/Status';
 import { getCaseURL, copyToClipboard, useNav } from '../../util';
 import { RPC_STATUS_TO_CODE } from '../../rpc';
-import { Project, ProjectEntry, SchemeCase, ReflectItemMap, ReflectItem } from '../../typings';
+import { SchemeCase, ReflectItemMap, ReflectItem, GroupEntry, GroupConfig, AccessConfig, AccessExtraConfig, AccessExtraItemValue } from '../../typings';
 import { CodeHighlight } from '../CodeHighlight/CodeHighlight';
 
+import './EndpointCase.css';
+import { useAppState, useAppStore } from '../../store/store';
+
 export type EndpointCaseProps = {
-	project: Project;
-	entry: ProjectEntry;
+	group: GroupConfig;
+	entry: GroupEntry;
 	value: SchemeCase;
-}
+};
 
 export function EndpointCase(props: EndpointCaseProps) {
 	const {
-		project,
+		group,
 		entry,
 		value,
 	} = props;
-	const nav = useNav();
+	const {
+		state: {
+			accessRights,
+		},
+	} = useAppStore();
 	const scheme = entry.scheme!;
+	const [activeAccess, setActiveAccess] = React.useState(accessRights[value.access]?.extra[0]);
+	const nav = useNav();
 	const detail = scheme.detail[value.status];
-	const params = Object.entries(value.params).map(([key, value]) => {
-		const ref = detail.request.params[key];
-		const skey = `${key}${ref.required ? '' : '?'}`;
-
-		return (
-			<div key={key}>
-				<div>/* {ref.comment}. <b>{getRefType(ref)}</b> */</div>
-				<b>{skey}</b>={typeof value === 'boolean' ? JSON.stringify(value) : value}
-			</div>
-		);
-	});
+	const headers = renderHeaders(activeAccess?.headers);
+	const params = renderParams(value.params, detail.request.params, activeAccess?.params);
 	const body = renderJSONObject(detail.response.body, value.body, '  ');
 	const isOK = value.status === 'ok';
-	const href = getCaseURL(project, entry, value);
+	const href = getCaseURL(group, entry, value);
 
 	return (
 		<Card
 			style={isOK ? {} : {borderColor: '#ffa39e'}}
 			title={<>
-				<div id={href} style={{
-					position: 'relative',
-					top: -20,
-				}}></div>
+				<div id={href} className="endpoint-case-hidden-anchor"/>
 				<span
-					style={{
-						position: 'absolute',
-						right: 20,
-						cursor: 'pointer',
-					}}
+					className="endpoint-case-copy-to-clipboard"
 					onClick={() => {
 						nav(href);
 						copyToClipboard(window.location.toString());
@@ -62,29 +55,104 @@ export function EndpointCase(props: EndpointCaseProps) {
 				<a href={href}>{value.name}</a><br/>
 				<Status name={value.status}/>
 				<Tag>{value.method}</Tag>
-				<span> → &nbsp;{entry.name}</span>
+				<span> → &nbsp;<EndpointURL value={entry} /></span>
 			</>}
 		>
 			{value.description && <>
 				<div>{value.description}</div>
-				<Divider/>
+				<br/>
+				<br/>
 			</>}
-			<div style={{background: '#fafafa', margin: -24, padding: 24}}>
+
+			{headers && <RequestSesion
+				bg="#f5f5f5"
+				name="request → headers"
+				extra={<AccessSelector
+					type={value.access}
+					active={activeAccess}
+					onSelect={setActiveAccess}
+				/>}
+			>
+				{headers}
+			</RequestSesion>}
+
+			{params && <RequestSesion
+				bg="#fafafa"
+				name="request → params"
+				extra={!headers && <AccessSelector
+					type={value.access}
+					active={activeAccess}
+					onSelect={setActiveAccess}
+				/>}
+			>
 				{params}
-			</div>
-			<br/>
-			<br/>
-			<div>
-				<CodeHighlight value={'{\n'
+			</RequestSesion>}
+
+			<RequestSesion name="response">
+				<CodeHighlight value={``
+					+ '{\n'
 					+ `  "status": ${RPC_STATUS_TO_CODE[value.status]},\n`
-					+ `  "body": ${body}\n}`
+					+ `  "body": ${body}`
+					+ `\n}`
 				}/>
-			</div>
+			</RequestSesion>
 		</Card>
 	);
 }
 
+type RequestSesionProps = {
+	bg?: string;
+	name: string;
+	extra?: React.ReactNode;
+	children: React.ReactNode;
+};
 
+function RequestSesion(props: RequestSesionProps) {
+	const {
+		bg,
+		name,
+		extra,
+		children,
+	} = props;
+
+	return (
+		<div className="request-section" style={{background: bg}}>
+			{extra && <div className="request-section-extra">{extra}</div>}
+			<div className="request-section-label">{name}</div>
+			<div className="request-section-body">{children}</div>
+		</div>
+	);
+}
+
+type AccessSelectorProps = {
+	type: string;
+	active: AccessExtraConfig | undefined;
+	onSelect: (item: AccessExtraConfig) => void;
+}
+
+function AccessSelector({type, active, onSelect}: AccessSelectorProps) {
+	const {
+		accessRights,
+	} = useAppState();
+	const access = accessRights[type];
+	
+	if (!access) {
+		return <>{type}</>;
+	}
+
+	return <div className="access-selector">{access.extra.map((item) => 
+		<div
+			className={`
+				access-selector-tab
+				${item === active && `access-selector-tab-active`}
+			`}
+			key={item.name}
+			onClick={() => onSelect(item)}
+		>
+			{item.name}
+		</div>
+	)}</div>;
+}
 
 function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 	if (raw == null || typeof raw !== 'object') {
@@ -123,4 +191,67 @@ function getRefType({type, meta_type, enum:ev}: ReflectItem) {
 	}
 
 	return type;
+}
+
+function renderHeaders(headers?: AccessExtraItemValue) {
+	if (!headers || headers.value === null) {
+		return null;
+	}
+
+	return headers.reflect.nested.map((item) => renderParamsItem(item.name, headers.value[item.name], item, ': '));
+}
+
+function renderParams(params: object, scheme: ReflectItemMap, extra?: AccessExtraItemValue) {
+	const base = Object.entries(params).map(([key, val]) => renderParamsItem(key, val, scheme[key]));
+
+	return (extra
+		? extra.reflect.nested
+			.map((item) => renderParamsItem(item.name, extra.value[item.name]!, item))
+			.concat(base)
+		: base
+	);
+}
+
+function renderParamsItem(key: string, value: any, ref: ReflectItem, sep = '=') {
+	const skey = `${key}${ref.required ? '' : '?'}`;
+	
+	return <div key={key}>
+		<div>/* {ref.comment}. <b>{getRefType(ref)}</b> */</div>
+		<b>{skey}</b>{sep}{typeof value === 'boolean' ? JSON.stringify(value) : value}
+	</div>
+}
+
+function EndpointURL({value}: {value: GroupEntry}) {
+	const {projects} = useAppState();
+	const project = projects[value.scheme?.project!];
+	const hosts = [] as string[];
+	let [activeHost, setActiveHost] = React.useState('');
+	let host = null as JSX.Element | null;
+
+	if (project) {
+		project.host && hosts.push(project.host);
+		project.host_rc && hosts.push(project.host_rc);
+		project.host_dev && hosts.push(project.host_dev);
+		
+		activeHost = hosts.includes(activeHost) ? activeHost : hosts[0];
+	
+		if (hosts.length > 1) {
+			const menu = (
+				<Menu onClick={({key}) => { setActiveHost(key); }}>{
+					hosts.map(v => <Menu.Item key={v}>{v}</Menu.Item>)
+				}</Menu>
+			);
+			const selector = (
+				<Dropdown overlay={menu}>
+					<span className="endpoint-case-host">{activeHost}</span>
+				</Dropdown>
+			);
+			
+			host = <>https://{selector}</>;
+		} else if (hosts.length) {
+			host = <>https://{hosts[0]}</>;
+		}
+	}
+
+	return <span>{host}{value.name}</span>;
 }
