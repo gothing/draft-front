@@ -136,7 +136,7 @@ function AccessSelector({type, active, onSelect}: AccessSelectorProps) {
 	if (!access) {
 		return (
 			<div className="access-selector-badge">
-				<Badge color="blue">{type}</Badge>
+				<Tag color="blue">{type}</Tag>
 			</div>
 		);
 	}
