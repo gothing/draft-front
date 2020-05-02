@@ -35,8 +35,8 @@ export function App({config}: AppLoaderProps) {
 		return {
 			...value,
 			...parseHistoryParams(value),
-		}
-	}, []);
+		};
+	}, [config]);
 
 	if (!config || !config.groups || !config.groups.length) {
 		console.warn('Brocked state:', state);
@@ -126,7 +126,6 @@ function useHashChange(handle: () => void, deps: any[]) {
 			window.removeEventListener('hashchange', handle);
 		};
 	}, deps);
-
 }
 
 function useAutoScroll(loading: boolean) {

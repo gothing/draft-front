@@ -14,7 +14,7 @@ export function Header() {
 	} = useAppStore();
 	const handleSearch = React.useCallback((evt: React.ChangeEvent<HTMLInputElement>) => {
 		updateState('search', evt.target.value);
-	}, [search]);
+	}, [updateState]);
 	const nav = useNav();
 
 	return (

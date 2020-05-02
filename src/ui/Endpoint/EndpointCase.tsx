@@ -1,6 +1,7 @@
 import * as React from 'react';
+import marked from 'marked';
 import { Tag, Card, message, Dropdown, Menu } from 'antd';
-import { LinkOutlined, SafetyOutlined } from '@ant-design/icons';
+import { LinkOutlined } from '@ant-design/icons';
 import { Status } from '../Status/Status';
 import { getCaseURL, copyToClipboard, useNav } from '../../util';
 import { RPC_STATUS_TO_CODE } from '../../rpc';
@@ -58,11 +59,7 @@ export function EndpointCase(props: EndpointCaseProps) {
 				<span> → &nbsp;<EndpointURL value={entry} /></span>
 			</>}
 		>
-			{value.description && <>
-				<div>{value.description}</div>
-				<br/>
-				<br/>
-			</>}
+			{value.description && <Description value={value.description}/>}
 
 			{headers && <RequestSesion
 				bg="#f5f5f5"
@@ -254,4 +251,24 @@ function EndpointURL({value}: {value: GroupEntry}) {
 	}
 
 	return <span>{host}{value.name}</span>;
+}
+
+function Description({value}: {value: string}) {
+	let indent = null as RegExp | null | false;
+	const result = marked(
+		value
+		.replace(/^\s*\n/, '')
+		.split('\n')
+			.map(line => {
+				if (indent === null) {
+					const m = line.match(/^\s+/);
+					indent = m ? new RegExp(`^${m[0]}`) : false;
+				}
+
+				return indent ? line.replace(indent!, '') : line;
+			})
+			.join('\n')
+	);
+
+	return <div className="endpoint-case-descr" dangerouslySetInnerHTML={{__html: result}}/>;
 }

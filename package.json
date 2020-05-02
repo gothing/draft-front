@@ -8,12 +8,14 @@
     "@testing-library/user-event": "^7.2.1",
     "@types/highlight.js": "^9.12.3",
     "@types/jest": "^24.9.1",
+    "@types/marked": "^0.7.4",
     "@types/node": "^12.12.37",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.6",
     "antd": "^4.1.4",
     "fuzzy": "^0.1.3",
     "highlight.js": "^10.0.0",
+    "marked": "^1.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
@@ -21,7 +23,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build && mv build docs",
+    "build": "react-scripts build && rm -rf docs && mv build docs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
