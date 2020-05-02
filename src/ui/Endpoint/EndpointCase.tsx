@@ -199,7 +199,7 @@ function renderHeaders(headers?: AccessExtraItemValue) {
 }
 
 function renderParams(params: object, scheme: ReflectItemMap, extra?: AccessExtraItemValue) {
-	const base = Object.entries(params).map(([key, val]) => renderParamsItem(key, val, scheme[key]));
+	const base = Object.entries(Object(params)).map(([key, val]) => renderParamsItem(key, val, scheme[key]));
 
 	return (extra
 		? extra.reflect.nested

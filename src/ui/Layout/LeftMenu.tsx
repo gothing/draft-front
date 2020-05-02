@@ -23,11 +23,12 @@ export function LeftMenu() {
 	const rootEntries = activeGroupEntries.flatMap(r => r.entries) || [];
 	const openKeys = [] as string[];
 	
-	const menuItems = rootEntries.map(function render(e) {
+	const menuItems = rootEntries.map(function render(e, idx) {
 		if (e.type === 'G') {
-			openKeys.push(e.name);
+			openKeys.push(`group-${idx}`);
+
 			return (
-				<Menu.SubMenu key={e.name} title={e.name}>
+				<Menu.SubMenu key={`group-${idx}`} title={e.name}>
 					{e.entries.map(render)}
 				</Menu.SubMenu>
 			);
