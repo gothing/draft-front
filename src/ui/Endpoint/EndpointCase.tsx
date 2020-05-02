@@ -1,6 +1,6 @@
 import * as React from 'react';
 import marked from 'marked';
-import { Tag, Card, message, Dropdown, Menu } from 'antd';
+import { Tag, Card, message, Dropdown, Menu, Badge } from 'antd';
 import { LinkOutlined } from '@ant-design/icons';
 import { Status } from '../Status/Status';
 import { getCaseURL, copyToClipboard, useNav } from '../../util';
@@ -134,7 +134,11 @@ function AccessSelector({type, active, onSelect}: AccessSelectorProps) {
 	const access = accessRights[type];
 	
 	if (!access) {
-		return <>{type}</>;
+		return (
+			<div className="access-selector-badge">
+				<Badge color="blue">{type}</Badge>
+			</div>
+		);
 	}
 
 	return <div className="access-selector">{access.extra.map((item) => 
@@ -199,6 +203,10 @@ function renderHeaders(headers?: AccessExtraItemValue) {
 }
 
 function renderParams(params: object, scheme: ReflectItemMap, extra?: AccessExtraItemValue) {
+	if (params == null && extra && extra.value == null) {
+		return null;
+	}
+
 	const base = Object.entries(Object(params)).map(([key, val]) => renderParamsItem(key, val, scheme[key]));
 
 	return (extra
