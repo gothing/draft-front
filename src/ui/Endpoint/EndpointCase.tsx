@@ -174,7 +174,7 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 		} else if (isObject(val)) {
 			val = JSON
 				.stringify(val, null, (nind + ind).length)
-				.replace(/\}$/, `${nind + ind}}`)
+				.replace(/\}$/, `${nind}}`)
 			;
 		} else {
 			val = JSON.stringify(val);
