@@ -287,5 +287,5 @@ function Description({value}: {value: string}) {
 }
 
 function isObject(val: unknown): val is object {
-	return Object.toString.call(val) === '[object Object]'
+	return Object.prototype.toString.call(val) === '[object Object]'
 }
