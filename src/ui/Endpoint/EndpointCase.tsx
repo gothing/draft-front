@@ -171,8 +171,10 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 				return map;
 			}, {} as ReflectItemMap);
 			val = renderJSONObject(nref, val, ind + ind);
+		} else if (isObject(val)) {
+			val = JSON.stringify(val, null, ind.length + 2);
 		} else {
-			val = JSON.stringify(val, null, 2);
+			val = JSON.stringify(val);
 		}
 
 		return [
@@ -282,4 +284,8 @@ function Description({value}: {value: string}) {
 	);
 
 	return <div className="endpoint-case-descr" dangerouslySetInnerHTML={{__html: result}}/>;
+}
+
+function isObject(val: unknown): val is object {
+	return Object.toString.call(val) === '[object Object]'
 }
