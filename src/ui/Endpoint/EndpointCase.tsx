@@ -172,7 +172,7 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 			}, {} as ReflectItemMap);
 			val = renderJSONObject(nref, val, ind + ind);
 		} else {
-			val = JSON.stringify(val);
+			val = JSON.stringify(val, null, 2);
 		}
 
 		return [
@@ -184,6 +184,9 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 
 function getRefType({type, meta_type, enum:ev}: ReflectItem) {
 	switch (type) {
+		case 'map':
+			return `map[${ev ? `${ ev.join(' | ') }` : 'string'}]string`;
+
 		case 'struct':
 			return 'object';
 

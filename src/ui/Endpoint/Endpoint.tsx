@@ -18,6 +18,8 @@ export function Endpoint({id}: Endpoint) {
 			projects,
 			activeGroup,
 			activeGroupEntries,
+			activeEndpoint,
+			fastEndpointIndex,
 		},
 	} = useAppStore();
 	const entry = React.useMemo(() => {
@@ -31,6 +33,10 @@ export function Endpoint({id}: Endpoint) {
 
 			return entry.entries.some(find);
 		});
+
+		if (!result && activeEndpoint) {
+			result = fastEndpointIndex[activeEndpoint] || null;
+		}
 
 		return result;
 	}, [activeGroupEntries, id]);

@@ -26,6 +26,8 @@ export function App({config}: AppLoaderProps) {
 			activeGroup: config?.active_group || null,
 			activeGroupEntries: [],
 			activeEndpoint: null,
+			
+			fastEndpointIndex: {},
 
 			groups: toMapById(config?.groups || []),
 			projects: toMapById(config?.projects || []),
@@ -34,7 +36,7 @@ export function App({config}: AppLoaderProps) {
 
 		return {
 			...value,
-			...parseHistoryParams(value),
+			...parseHistoryParams(value, true),
 		};
 	}, [config]);
 
@@ -161,8 +163,17 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 		if (cache === void 0) {
 			loading = true;
 			groupEntryCache[entry] = null;
-			fetch(entry).then(r => r.json()).then(json => {
-				groupEntryCache[entry] = json;
+			fetch(entry).then(r => r.json()).then((group: GroupEntry) => {
+				groupEntryCache[entry] = group;
+				
+				group.entries.forEach(function next(entry) {
+					if (entry.type === 'E') {
+						state.fastEndpointIndex[entry.name] = entry;
+					} else if (entry.type === 'G') {
+						entry.entries.forEach(next);
+					}
+				});
+				
 				forceUpdate();
 			});
 		} else if (cache === null) {

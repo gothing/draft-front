@@ -62,6 +62,10 @@ export type AppState = {
 	activeGroup: string | null;
 	activeGroupEntries: GroupEntry[];
 	activeEndpoint: string | null;
+
+	fastEndpointIndex: {
+		[url:string]: GroupEntry | undefined;
+	};
 };
 
 export type AppStore = {

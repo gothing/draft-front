@@ -89,7 +89,20 @@ export function getCaseURL(group: GroupConfig, entry: GroupEntry, c: SchemeCase)
 	return `${getBaseURL(group, entry)}?case=${c.name}`;
 }
 
-export function parseHistoryParams(state: AppState) {
+const rDocLocation = /^\/godraft:doc[a-z]+(\/api\/[^?#]+)/;
+
+export function parseHistoryParams(state: AppState, checkPath?: boolean) {
+	if (checkPath) {
+		const parsed = window.location.pathname.match(rDocLocation);
+		if (parsed) {
+			window.history.pushState(null, '', '/godraft:docs/');
+			return {
+				activeEndpoint: parsed[1],
+			};
+		}
+	}
+
+
 	const [
 		_,
 		id,
