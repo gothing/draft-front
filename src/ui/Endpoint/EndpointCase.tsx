@@ -172,7 +172,10 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 			}, {} as ReflectItemMap);
 			val = renderJSONObject(nref, val, ind + ind);
 		} else if (isObject(val)) {
-			val = JSON.stringify(val, null, ind.length + 2);
+			val = JSON
+				.stringify(val, null, (ind + ind).length)
+				.replace(/\}$/, `${ind}}`)
+			;
 		} else {
 			val = JSON.stringify(val);
 		}
