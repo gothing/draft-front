@@ -264,7 +264,7 @@ function EndpointURL({entry, scheme, access}: EndpointURLProps) {
 		project.host_rc && hosts.push(project.host_rc);
 		project.host_dev && hosts.push(project.host_dev);
 		
-		activeHost = hosts.includes(activeHost) ? activeHost : hosts[0];
+		activeHost = hosts.includes(activeHost) ? activeHost : (project.host_rc || hosts[0]);
 	
 		if (hosts.length > 1) {
 			const menu = (
