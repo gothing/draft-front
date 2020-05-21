@@ -344,14 +344,17 @@ function RequestFactory(props: RequestFactoryProps) {
 		setVisible(false);
 	};
 
+	const fullUrl = `https://${host}${url}`;
+
 	return (<>
 		<a onClick={handleOpen}><CodeOutlined /></a>
 		<Modal
 			visible={visible}
+			width={Math.max(520, 150 + fullUrl.length * 7.4)}
 			title={<>
 				<Tag>{scheme.method}</Tag>
 				{' → '}&nbsp;
-				<Typography.Text ellipsis>https://{host}{url}</Typography.Text>
+				<span>{fullUrl}</span>
 			</>}
 			onOk={handleSend}
 			onCancel={() => { setVisible(false); }}
