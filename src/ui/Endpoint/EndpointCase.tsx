@@ -174,7 +174,7 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 	const nind = ind + '  ';
 
 	return `{\n${Object.entries(raw).map(([key, val]) => {
-		const refVal = ref[key];
+		const refVal = ref && ref[key];
 		const refNested = refVal && refVal.nested;
 
 		if (refNested && refNested.length) {
@@ -192,10 +192,10 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 			val = JSON.stringify(val);
 		}
 
-		return [
-			`${nind}/* ${refVal.comment}. <b>${getRefType(refVal)}</b> */`,
-			`${nind}"${key}": ${val}`,
-		].join('\n');
+		const prop = [`${nind}"${key}": ${val}`];
+		refVal && prop.unshift( `${nind}/* ${refVal.comment}. <b>${getRefType(refVal)}</b> */`)
+
+		return prop.join('\n');
 	}).join(',\n')}\n${ind}}`;
 }
 
