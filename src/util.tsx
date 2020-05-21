@@ -2,6 +2,7 @@ import * as React from 'react';
 import { SchemeCase, AppState, GroupEntry, GroupConfig } from './typings';
 import { MatchResult, match as fuzzyMatch } from 'fuzzy';
 import { useAppStore } from './store/store';
+import marked from 'marked';
 
 export function getGroupEntryKey(entry: GroupEntry) {
 	let key = entry.name;
@@ -122,4 +123,23 @@ export function toMapById<T>(list: {[id:string]: any}[]): T {
 		map[item.id] = item;
 		return map;
 	}, {}) as T;
+}
+
+export function markdown(value:string) {
+	let indent = null as RegExp | null | false;
+	const prepared = value
+		.replace(/^\s*\n/, '')
+		.split('\n')
+			.map(line => {
+				if (indent === null) {
+					const m = line.match(/^\s+/);
+					indent = m ? new RegExp(`^${m[0]}`) : false;
+				}
+
+				return indent ? line.replace(indent!, '') : line;
+			})
+			.join('\n')
+	;
+	
+	return marked(prepared);
 }

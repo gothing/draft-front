@@ -29,7 +29,7 @@ export function AppLayout() {
 			<Header/>	
 
 			<Layout>
-				<Layout.Sider className="site-layout-background">
+				<Layout.Sider width={250} className="site-layout-background">
 					<LeftMenu/>
 				</Layout.Sider>
 

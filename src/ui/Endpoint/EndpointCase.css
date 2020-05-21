@@ -85,3 +85,19 @@
 .access-selector-badge {
 	padding-top: 10px;
 }
+
+.ant-tooltip-inner p {
+	margin: 0;
+}
+
+.request-form-item.required-true::before {
+	content: '*';
+	display: block;
+	position: absolute;
+	margin-left: -10px;
+	color: #ff4d4f;
+}
+
+.request-form-item + .request-form-item {
+	margin-top: 5px;
+}

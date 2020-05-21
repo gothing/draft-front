@@ -20,7 +20,7 @@ export function Header() {
 	return (
 		<Layout.Header className="header">
 			<Layout>
-				<Layout.Sider width={150}>
+				<Layout.Sider width={200}>
 					<Logo/>
 				</Layout.Sider>
 				

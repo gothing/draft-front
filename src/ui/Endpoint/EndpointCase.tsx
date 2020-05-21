@@ -1,11 +1,10 @@
 import * as React from 'react';
-import marked from 'marked';
-import { Tag, Card, message, Dropdown, Menu, Badge } from 'antd';
-import { LinkOutlined } from '@ant-design/icons';
+import { Tag, Card, message, Dropdown, Menu, Tooltip, Modal, Input, Space, Checkbox } from 'antd';
+import { LinkOutlined, QuestionCircleFilled, CodeOutlined } from '@ant-design/icons';
 import { Status } from '../Status/Status';
-import { getCaseURL, copyToClipboard, useNav } from '../../util';
+import { getCaseURL, copyToClipboard, useNav, markdown } from '../../util';
 import { RPC_STATUS_TO_CODE } from '../../rpc';
-import { SchemeCase, ReflectItemMap, ReflectItem, GroupEntry, GroupConfig, AccessConfig, AccessExtraConfig, AccessExtraItemValue } from '../../typings';
+import { SchemeCase, ReflectItemMap, ReflectItem, GroupEntry, GroupConfig, AccessConfig, AccessExtraConfig, AccessExtraItemValue, JSONSchemeDetail } from '../../typings';
 import { CodeHighlight } from '../CodeHighlight/CodeHighlight';
 
 import './EndpointCase.css';
@@ -56,12 +55,19 @@ export function EndpointCase(props: EndpointCaseProps) {
 				<a href={href}>{value.name}</a><br/>
 				<Status name={value.status}/>
 				<Tag>{value.method}</Tag>
-				<span> → &nbsp;<EndpointURL value={entry} /></span>
+				<span>
+					{' → '}&nbsp;
+					<EndpointURL
+						entry={entry}
+						scheme={value}
+						access={activeAccess}
+					/>
+				</span>
 			</>}
 		>
 			{value.description && <Description value={value.description}/>}
 
-			{headers && <RequestSesion
+			{headers && <RequestSection
 				bg="#f5f5f5"
 				name="request → headers"
 				extra={<AccessSelector
@@ -71,9 +77,9 @@ export function EndpointCase(props: EndpointCaseProps) {
 				/>}
 			>
 				{headers}
-			</RequestSesion>}
+			</RequestSection>}
 
-			{params && <RequestSesion
+			{params && <RequestSection
 				bg="#fafafa"
 				name="request → params"
 				extra={!headers && <AccessSelector
@@ -83,28 +89,28 @@ export function EndpointCase(props: EndpointCaseProps) {
 				/>}
 			>
 				{params}
-			</RequestSesion>}
+			</RequestSection>}
 
-			<RequestSesion name="response">
+			<RequestSection name="response">
 				<CodeHighlight value={``
 					+ '{\n'
 					+ `  "status": ${RPC_STATUS_TO_CODE[value.status]},\n`
 					+ `  "body": ${body}`
 					+ `\n}`
 				}/>
-			</RequestSesion>
+			</RequestSection>
 		</Card>
 	);
 }
 
-type RequestSesionProps = {
+type RequestSectionProps = {
 	bg?: string;
 	name: string;
 	extra?: React.ReactNode;
 	children: React.ReactNode;
 };
 
-function RequestSesion(props: RequestSesionProps) {
+function RequestSection(props: RequestSectionProps) {
 	const {
 		bg,
 		name,
@@ -151,6 +157,12 @@ function AccessSelector({type, active, onSelect}: AccessSelectorProps) {
 			onClick={() => onSelect(item)}
 		>
 			{item.name}
+			{item.description && <>
+				{' '}
+				<Tooltip title={<span dangerouslySetInnerHTML={{__html: markdown(item.description)}}/>}>
+					<QuestionCircleFilled />
+				</Tooltip>
+			</>}
 		</div>
 	)}</div>;
 }
@@ -234,9 +246,15 @@ function renderParamsItem(key: string, value: any, ref: ReflectItem, sep = '=') 
 	</div>
 }
 
-function EndpointURL({value}: {value: GroupEntry}) {
+type EndpointURLProps = {
+	entry: GroupEntry;
+	scheme: SchemeCase;
+	access?: AccessExtraConfig;
+}
+
+function EndpointURL({entry, scheme, access}: EndpointURLProps) {
 	const {projects} = useAppState();
-	const project = projects[value.scheme?.project!];
+	const project = projects[entry.scheme?.project!];
 	const hosts = [] as string[];
 	let [activeHost, setActiveHost] = React.useState('');
 	let host = null as JSX.Element | null;
@@ -266,27 +284,140 @@ function EndpointURL({value}: {value: GroupEntry}) {
 		}
 	}
 
-	return <span>{host}{value.name}</span>;
+	return(
+		<span>
+			{host}{entry.name}{' '}
+			<RequestFactory
+				access={access}
+				project={entry.scheme!.project}
+				detail={entry.scheme!.detail[scheme.status]!}
+				scheme={scheme}
+				host={activeHost}
+				url={entry.name}
+			/>
+		</span>
+	);
 }
 
+type RequestFactoryProps = {
+	project?: string;
+	access?: AccessExtraConfig;
+	detail: JSONSchemeDetail;
+	scheme: SchemeCase;
+	host: string;
+	url: string;
+};
+
+function RequestFactory(props: RequestFactoryProps) {
+	const {
+		project,
+		access,
+		detail,
+		scheme,
+		host,
+		url,
+	} = props;
+	const formRef = React.useRef(null as HTMLFormElement | null)
+	const [visible, setVisible] = React.useState(true);
+	const handleOpen = () => {
+		setVisible(true);
+	};
+	const handleSend = () => {
+		if (formRef.current) {
+			const elems = Array.from(formRef.current.elements) as HTMLInputElement[];
+			const values = elems.reduce((p, el: HTMLInputElement) => {
+				p[el.name] = [`${el.type === 'checkbox' ? el.checked : el.value}`];
+				return p;
+			}, {} as any);
+			
+			window.open(`/godraft:request/?data=${encodeURIComponent(JSON.stringify({
+				project,
+				access: scheme.access,
+				access_extra: access?.name,
+				method: scheme.method,
+				host,
+				path: url,
+				values,
+			}))}`);
+		}
+
+		setVisible(false);
+	};
+
+	return (<>
+		<a onClick={handleOpen}><CodeOutlined /></a>
+		<Modal
+			visible={visible}
+			title={<>
+				<Tag>{scheme.method}</Tag>
+				<span>
+					{' → '}&nbsp;
+					https://{host}{url}
+				</span>
+			</>}
+			onOk={handleSend}
+			onCancel={() => { setVisible(false); }}
+			okText={'Execute'}
+		>
+			<form ref={formRef}>
+				<RequestForm detail={detail} params={Object(scheme.params)}/>
+			</form>
+        </Modal>
+	</>);
+}
+
+type RequestFormProps = {
+	detail: JSONSchemeDetail;
+	params: SchemeCase['params'];
+}
+
+function RequestForm({params, detail}: RequestFormProps) {
+	const [state, setState] = React.useState({} as any);
+
+	return <>{Object.entries(params).map(([key, value]) => {
+		const param = detail.request.params[key];
+		const Elem = param.type === 'bool' ? Checkbox : Input;
+		const props: any = {
+			name: key,
+			required: param.required,
+			value: void 0,
+			checked: void 0,
+			onChange: ({target}: React.ChangeEvent<HTMLInputElement>) => {
+				setState({
+					...state,
+					[key]: param.type === 'bool'  ? target.checked : target.value,
+				});
+			},
+		};
+
+		if (state[key] === void 0) {
+			state[key] = value;
+		}
+
+		if (param.type === 'bool') {
+			props.checked = state[key];
+			props.value = 'true';
+		} else {
+			props.value = state[key];
+		}
+
+		return (
+			<div key={key} className={`request-form-item required-${props.required}`}>
+				<div><b>{key}</b>: {param.comment}</div>
+				<Elem {...props} />
+			</div>
+		)
+	})}</>;
+}
+
+
 function Description({value}: {value: string}) {
-	let indent = null as RegExp | null | false;
-	const result = marked(
-		value
-		.replace(/^\s*\n/, '')
-		.split('\n')
-			.map(line => {
-				if (indent === null) {
-					const m = line.match(/^\s+/);
-					indent = m ? new RegExp(`^${m[0]}`) : false;
-				}
-
-				return indent ? line.replace(indent!, '') : line;
-			})
-			.join('\n')
+	return (
+		<div
+			className="endpoint-case-descr"
+			dangerouslySetInnerHTML={{__html: markdown(value)}}
+		/>
 	);
-
-	return <div className="endpoint-case-descr" dangerouslySetInnerHTML={{__html: result}}/>;
 }
 
 function isObject(val: unknown): val is object {

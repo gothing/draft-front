@@ -31,7 +31,7 @@ export type AccessConfig = {
 
 export type AccessExtraConfig = {
 	name: string;
-	descrition: string;
+	description: string;
 	headers: AccessExtraItemValue;
 	params: AccessExtraItemValue;
 };
