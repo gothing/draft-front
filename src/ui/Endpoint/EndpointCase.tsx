@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Tag, Card, message, Dropdown, Menu, Tooltip, Modal, Input, Space, Checkbox } from 'antd';
+import { Tag, Card, message, Dropdown, Menu, Tooltip, Modal, Input, Space, Checkbox, Typography } from 'antd';
 import { LinkOutlined, QuestionCircleFilled, CodeOutlined } from '@ant-design/icons';
 import { Status } from '../Status/Status';
 import { getCaseURL, copyToClipboard, useNav, markdown } from '../../util';
@@ -348,13 +348,10 @@ function RequestFactory(props: RequestFactoryProps) {
 		<a onClick={handleOpen}><CodeOutlined /></a>
 		<Modal
 			visible={visible}
-			width={600}
 			title={<>
 				<Tag>{scheme.method}</Tag>
-				<span>
-					{' → '}&nbsp;
-					https://{host}{url}
-				</span>
+				{' → '}&nbsp;
+				<Typography.Text ellipsis>https://{host}{url}</Typography.Text>
 			</>}
 			onOk={handleSend}
 			onCancel={() => { setVisible(false); }}
