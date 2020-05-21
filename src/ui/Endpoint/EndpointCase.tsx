@@ -318,7 +318,7 @@ function RequestFactory(props: RequestFactoryProps) {
 		url,
 	} = props;
 	const formRef = React.useRef(null as HTMLFormElement | null)
-	const [visible, setVisible] = React.useState(true);
+	const [visible, setVisible] = React.useState(false);
 	const handleOpen = () => {
 		setVisible(true);
 	};
@@ -348,6 +348,7 @@ function RequestFactory(props: RequestFactoryProps) {
 		<a onClick={handleOpen}><CodeOutlined /></a>
 		<Modal
 			visible={visible}
+			width={600}
 			title={<>
 				<Tag>{scheme.method}</Tag>
 				<span>
