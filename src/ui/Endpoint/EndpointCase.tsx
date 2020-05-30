@@ -360,7 +360,10 @@ function RequestFactory(props: RequestFactoryProps) {
 			onCancel={() => { setVisible(false); }}
 			okText={'Execute'}
 		>
-			<form ref={formRef}>
+			<form ref={formRef} onSubmit={(evt) => {
+				evt.preventDefault();
+				handleSend();
+			}}>
 				<RequestForm detail={detail} params={Object(scheme.params)}/>
 			</form>
         </Modal>
