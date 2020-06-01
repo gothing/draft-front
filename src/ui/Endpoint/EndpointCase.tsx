@@ -245,14 +245,11 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 		val = renderJSONObject(ref.nested.reduce((map, item) => {
 			map[item.name] = item;
 			return map;
-		}, {} as ReflectItemMap), rawVal, '   ');
+		}, {} as ReflectItemMap), rawVal, '');
 
 		return <div key={key}>
 			<div>/* {ref.comment} */</div>
-			<b>{skey}</b>{sep}
-			<div>
-				<CodeHighlight value={val}/>
-			</div>
+			<b>{skey}</b>{sep}<CodeHighlight value={val}/>
 		</div>;
 	}
 	
