@@ -241,7 +241,7 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 	const skey = `${key}${ref.required ? '' : '?'}`;
 	let val: any = `${rawVal}`;
 
-	if (rawVal && typeof rawVal === 'object' && !ref.nested.length) {
+	if (rawVal && typeof rawVal === 'object' && ref.nested.length) {
 		val = renderJSONObject(ref.nested.reduce((map, item) => {
 			map[item.name] = item;
 			return map;
