@@ -237,12 +237,20 @@ function renderParams(params: object, scheme: ReflectItemMap, extra?: AccessExtr
 	);
 }
 
-function renderParamsItem(key: string, value: any, ref: ReflectItem, sep = '=') {
+function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=') {
 	const skey = `${key}${ref.required ? '' : '?'}`;
+	let val: any = `${rawVal}`;
+
+	if (rawVal && typeof rawVal === 'object') {
+		val = !ref.nested.length ? JSON.stringify(rawVal) : renderJSONObject(ref.nested.reduce((map, item) => {
+			map[item.name] = item;
+			return map;
+		}, {} as ReflectItemMap), rawVal, '   ');
+	}
 	
 	return <div key={key}>
 		<div>/* {ref.comment}. <b>{getRefType(ref)}</b> */</div>
-		<b>{skey}</b>{sep}{typeof value === 'boolean' ? JSON.stringify(value) : value}
+		<b>{skey}</b>{sep}{val}
 	</div>
 }
 
