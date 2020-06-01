@@ -241,17 +241,25 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 	const skey = `${key}${ref.required ? '' : '?'}`;
 	let val: any = `${rawVal}`;
 
-	if (rawVal && typeof rawVal === 'object') {
-		val = !ref.nested.length ? JSON.stringify(rawVal) : renderJSONObject(ref.nested.reduce((map, item) => {
+	if (rawVal && typeof rawVal === 'object' && !ref.nested.length) {
+		val = renderJSONObject(ref.nested.reduce((map, item) => {
 			map[item.name] = item;
 			return map;
 		}, {} as ReflectItemMap), rawVal, '   ');
+
+		return <div key={key}>
+			<div>/* {ref.comment} */</div>
+			<b>{skey}</b>{sep}
+			<div>
+				<CodeHighlight value={val}/>
+			</div>
+		</div>;
 	}
 	
 	return <div key={key}>
 		<div>/* {ref.comment}. <b>{getRefType(ref)}</b> */</div>
 		<b>{skey}</b>{sep}{val}
-	</div>
+	</div>;
 }
 
 type EndpointURLProps = {

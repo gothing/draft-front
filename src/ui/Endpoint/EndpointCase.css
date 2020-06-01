@@ -101,3 +101,7 @@
 .request-form-item + .request-form-item {
 	margin-top: 5px;
 }
+
+.request-section .hljs {
+	background-color: transparent;
+}
