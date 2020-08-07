@@ -101,6 +101,10 @@ export type SchemeCase = {
 	access: string;
 	status: string;
 	method: string;
+	headers: {
+		request: object;
+		response: object;
+	};
 	params: object;
 	body: object;
 };
@@ -113,12 +117,18 @@ export type JSONSchemeDetail = {
 
 export type JSONSchemeRequest = {
 	method: string;
+	headers: {
+		[name:string]: ReflectItem;
+	};
 	params: {
 		[name:string]: ReflectItem;
 	};
 };
 
 export type JSONSchemeResponse = {
+	headers: {
+		[name:string]: ReflectItem;
+	};
 	body: {
 		[name:string]: ReflectItem;
 	};

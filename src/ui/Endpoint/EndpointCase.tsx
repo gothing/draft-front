@@ -31,11 +31,17 @@ export function EndpointCase(props: EndpointCaseProps) {
 	const [activeAccess, setActiveAccess] = React.useState(accessRights[value.access]?.extra[0]);
 	const nav = useNav();
 	const detail = scheme.detail[value.status];
-	const headers = renderHeaders(activeAccess?.headers);
+	const reqHeaders = renderParams(value.headers.request, detail.request.headers, activeAccess?.headers, ': ');
+	const respHeaders = renderParams(value.headers.response, detail.response.headers, undefined, ': ');
 	const params = renderParams(value.params, detail.request.params, activeAccess?.params);
 	const body = renderJSONObject(detail.response.body, value.body, '  ');
 	const isOK = value.status === 'ok';
 	const href = getCaseURL(group, entry, value);
+	const accessSelector = <AccessSelector
+		type={value.access}
+		active={activeAccess}
+		onSelect={setActiveAccess}
+	/>;
 
 	return (
 		<Card
@@ -67,28 +73,28 @@ export function EndpointCase(props: EndpointCaseProps) {
 		>
 			{value.description && <Description value={value.description}/>}
 
-			{headers && <RequestSection
+			{reqHeaders && <RequestSection
 				bg="#f5f5f5"
 				name="request → headers"
-				extra={<AccessSelector
-					type={value.access}
-					active={activeAccess}
-					onSelect={setActiveAccess}
-				/>}
+				extra={accessSelector}
 			>
-				{headers}
+				{reqHeaders}
 			</RequestSection>}
 
 			{params && <RequestSection
 				bg="#fafafa"
 				name="request → params"
-				extra={!headers && <AccessSelector
-					type={value.access}
-					active={activeAccess}
-					onSelect={setActiveAccess}
-				/>}
+				extra={!reqHeaders && accessSelector}
 			>
 				{params}
+			</RequestSection>}
+
+			{respHeaders && <RequestSection
+				bg="#f5f5f5"
+				name="response → headers"
+				extra={!reqHeaders && !params && accessSelector}
+			>
+				{reqHeaders}
 			</RequestSection>}
 
 			<RequestSection name="response">
@@ -214,24 +220,24 @@ function getRefType({type, meta_type, enum:ev}: ReflectItem) {
 	return type;
 }
 
-function renderHeaders(headers?: AccessExtraItemValue) {
-	if (!headers || headers.value === null) {
+function renderParams(
+	params: object,
+	scheme: ReflectItemMap,
+	extra?: AccessExtraItemValue,
+	sep?: string,
+) {
+	if (params == null && extra?.value == null) {
 		return null;
 	}
 
-	return headers.reflect.nested.map((item) => renderParamsItem(item.name, headers.value[item.name], item, ': '));
-}
-
-function renderParams(params: object, scheme: ReflectItemMap, extra?: AccessExtraItemValue) {
-	if (params == null && extra && extra.value == null) {
-		return null;
-	}
-
-	const base = Object.entries(Object(params)).map(([key, val]) => renderParamsItem(key, val, scheme[key]));
+	const base = Object
+		.entries(Object(params))
+		.map(([key, val]) => renderParamsItem(key, val, scheme[key], sep))
+	;
 
 	return (extra
 		? extra.reflect.nested
-			.map((item) => renderParamsItem(item.name, extra.value[item.name]!, item))
+			.map((item) => renderParamsItem(item.name, extra.value[item.name]!, item, sep))
 			.concat(base)
 		: base
 	);
