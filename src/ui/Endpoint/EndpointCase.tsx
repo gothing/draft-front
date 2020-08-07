@@ -94,7 +94,7 @@ export function EndpointCase(props: EndpointCaseProps) {
 				name="response → headers"
 				extra={!reqHeaders && !params && accessSelector}
 			>
-				{reqHeaders}
+				{respHeaders}
 			</RequestSection>}
 
 			<RequestSection name="response">
