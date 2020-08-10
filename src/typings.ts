@@ -32,7 +32,7 @@ export type AccessConfig = {
 export type AccessExtraConfig = {
 	name: string;
 	description: string;
-	headers: AccessExtraItemValue;
+	headers?: AccessExtraItemValue;
 	params: AccessExtraItemValue;
 };
 
@@ -101,7 +101,7 @@ export type SchemeCase = {
 	access: string;
 	status: string;
 	method: string;
-	headers: {
+	headers?: {
 		request: object;
 		response: object;
 	};
@@ -117,7 +117,7 @@ export type JSONSchemeDetail = {
 
 export type JSONSchemeRequest = {
 	method: string;
-	headers: {
+	headers?: {
 		[name:string]: ReflectItem;
 	};
 	params: {
@@ -126,7 +126,7 @@ export type JSONSchemeRequest = {
 };
 
 export type JSONSchemeResponse = {
-	headers: {
+	headers?: {
 		[name:string]: ReflectItem;
 	};
 	body: {

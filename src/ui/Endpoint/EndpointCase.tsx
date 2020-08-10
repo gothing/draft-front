@@ -31,8 +31,8 @@ export function EndpointCase(props: EndpointCaseProps) {
 	const [activeAccess, setActiveAccess] = React.useState(accessRights[value.access]?.extra[0]);
 	const nav = useNav();
 	const detail = scheme.detail[value.status];
-	const reqHeaders = renderParams(value.headers.request, detail.request.headers, activeAccess?.headers, ': ');
-	const respHeaders = renderParams(value.headers.response, detail.response.headers, undefined, ': ');
+	const reqHeaders = renderParams(value.headers?.request, detail.request.headers, activeAccess?.headers, ': ');
+	const respHeaders = renderParams(value.headers?.response, detail.response.headers, undefined, ': ');
 	const params = renderParams(value.params, detail.request.params, activeAccess?.params);
 	const body = renderJSONObject(detail.response.body, value.body, '  ');
 	const isOK = value.status === 'ok';
@@ -221,8 +221,8 @@ function getRefType({type, meta_type, enum:ev}: ReflectItem) {
 }
 
 function renderParams(
-	params: object,
-	scheme: ReflectItemMap,
+	params?: object,
+	scheme?: ReflectItemMap,
 	extra?: AccessExtraItemValue,
 	sep?: string,
 ) {
@@ -230,7 +230,7 @@ function renderParams(
 		return null;
 	}
 
-	const base = Object
+	const base = !scheme ? <></> : Object
 		.entries(Object(params))
 		.map(([key, val]) => renderParamsItem(key, val, scheme[key], sep))
 	;
