@@ -105,3 +105,10 @@
 .request-section .hljs {
 	background-color: transparent;
 }
+
+.endpoint-param-value {
+	display: inline-block;
+	max-width: 50vh;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

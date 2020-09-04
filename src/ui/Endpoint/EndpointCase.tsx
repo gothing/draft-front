@@ -261,7 +261,9 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 	
 	return <div key={key}>
 		<div>/* {ref.comment}. <b>{getRefType(ref)}</b> */</div>
-		<b>{skey}</b>{sep}{val}
+		<b>{skey}</b>
+		{sep}
+		{typeof val === 'string' ? <span title={val} className="endpoint-param-value">{val}</span> : val}
 	</div>;
 }
 
