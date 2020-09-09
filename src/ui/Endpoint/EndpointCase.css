@@ -108,7 +108,8 @@
 
 .endpoint-param-value {
 	display: inline-block;
-	max-width: 50vh;
+	max-width: 60vw;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	vertical-align: top;
 }
