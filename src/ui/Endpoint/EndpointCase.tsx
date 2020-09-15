@@ -235,7 +235,7 @@ function renderParams(
 		.map(([key, val]) => renderParamsItem(key, val, scheme[key], sep))
 	;
 
-	return (extra
+	return (extra && extra.reflect && extra.reflect.nested
 		? extra.reflect.nested
 			.map((item) => renderParamsItem(item.name, extra.value[item.name]!, item, sep))
 			.concat(base)
