@@ -7,7 +7,12 @@ export type StatusProps = {
 };
 
 export function Status({name, badge}: StatusProps) {
-	const color = name === 'ok' ? 'success' : 'error';
+	const color = name === 'found'
+		? 'processing'
+		: name === 'ok'
+		? 'success'
+		: 'error'
+	;
 	const status = name.toUpperCase();
 	const style = badge ? {
 		borderRadius: 5,

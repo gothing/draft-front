@@ -42,6 +42,7 @@ export function EndpointCase(props: EndpointCaseProps) {
 		active={activeAccess}
 		onSelect={setActiveAccess}
 	/>;
+	const codeStatus = RPC_STATUS_TO_CODE[value.status];
 
 	return (
 		<Card
@@ -97,14 +98,14 @@ export function EndpointCase(props: EndpointCaseProps) {
 				{respHeaders}
 			</RequestSection>}
 
-			<RequestSection name="response">
+			{codeStatus < 300 || codeStatus > 300 && <RequestSection name="response">
 				<CodeHighlight value={``
 					+ '{\n'
 					+ `  "status": ${RPC_STATUS_TO_CODE[value.status]},\n`
 					+ `  "body": ${body}`
 					+ `\n}`
 				}/>
-			</RequestSection>
+			</RequestSection>}
 		</Card>
 	);
 }
