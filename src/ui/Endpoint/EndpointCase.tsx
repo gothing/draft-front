@@ -46,7 +46,13 @@ export function EndpointCase(props: EndpointCaseProps) {
 
 	return (
 		<Card
-			style={isOK ? {} : {borderColor: '#ffa39e'}}
+			style={
+				isOK
+				? {}
+				: value.status === 'found'
+				? {borderColor: '#91d5ff'}
+				: {borderColor: '#ffa39e'}
+			}
 			title={<>
 				<div id={href} className="endpoint-case-hidden-anchor"/>
 				<span
