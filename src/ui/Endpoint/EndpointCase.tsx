@@ -104,7 +104,7 @@ export function EndpointCase(props: EndpointCaseProps) {
 				{respHeaders}
 			</RequestSection>}
 
-			{codeStatus < 300 || codeStatus > 300 && <RequestSection name="response">
+			{(codeStatus < 300 || codeStatus >= 400) && <RequestSection name="response">
 				<CodeHighlight value={``
 					+ '{\n'
 					+ `  "status": ${RPC_STATUS_TO_CODE[value.status]},\n`
