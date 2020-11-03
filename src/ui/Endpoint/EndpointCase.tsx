@@ -32,7 +32,9 @@ export function EndpointCase(props: EndpointCaseProps) {
 	const nav = useNav();
 	const detail = scheme.detail[value.status];
 	const reqHeaders = renderParams(value.headers?.request, detail.request.headers, activeAccess?.headers, ': ');
+	const reqCookies = renderParams(value.cookies?.request, detail.request.cookies, activeAccess?.cookies, ': ');
 	const respHeaders = renderParams(value.headers?.response, detail.response.headers, undefined, ': ');
+	const respCookies = renderParams(value.cookies?.response, detail.response.cookies, undefined, ': ');
 	const params = renderParams(value.params, detail.request.params, activeAccess?.params);
 	const body = renderJSONObject(detail.response.body, value.body, '  ');
 	const isOK = value.status === 'ok';
@@ -88,6 +90,14 @@ export function EndpointCase(props: EndpointCaseProps) {
 				{reqHeaders}
 			</RequestSection>}
 
+			{reqCookies && <RequestSection
+				bg="#f5f5f5"
+				name="request → cookies"
+				extra={accessSelector}
+			>
+				{reqCookies}
+			</RequestSection>}
+
 			{params && <RequestSection
 				bg="#fafafa"
 				name="request → params"
@@ -102,6 +112,14 @@ export function EndpointCase(props: EndpointCaseProps) {
 				extra={!reqHeaders && !params && accessSelector}
 			>
 				{respHeaders}
+			</RequestSection>}
+
+			{respCookies && <RequestSection
+				bg="#f5f5f5"
+				name="response → cookies"
+				extra={!reqCookies && !params && accessSelector}
+			>
+				{respCookies}
 			</RequestSection>}
 
 			{(codeStatus < 300 || codeStatus >= 400) && <RequestSection name="response">
