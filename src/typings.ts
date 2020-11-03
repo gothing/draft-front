@@ -33,6 +33,7 @@ export type AccessExtraConfig = {
 	name: string;
 	description: string;
 	headers?: AccessExtraItemValue;
+	cookies?: AccessExtraItemValue;
 	params: AccessExtraItemValue;
 };
 
@@ -105,6 +106,10 @@ export type SchemeCase = {
 		request: object;
 		response: object;
 	};
+	cookies?: {
+		request: object;
+		response: object;
+	};
 	params: object;
 	body: object;
 };
@@ -120,6 +125,9 @@ export type JSONSchemeRequest = {
 	headers?: {
 		[name:string]: ReflectItem;
 	};
+	cookies?: {
+		[name:string]: ReflectItem;
+	};
 	params: {
 		[name:string]: ReflectItem;
 	};
@@ -127,6 +135,9 @@ export type JSONSchemeRequest = {
 
 export type JSONSchemeResponse = {
 	headers?: {
+		[name:string]: ReflectItem;
+	};
+	cookies?: {
 		[name:string]: ReflectItem;
 	};
 	body: {
