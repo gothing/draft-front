@@ -46,7 +46,8 @@ export function EndpointCase(props: EndpointCaseProps) {
 	/>;
 	const codeStatus = RPC_STATUS_TO_CODE[value.status];
 
-	useConsoleLog('EndpointCase:', {reqHeaders, reqCookies, params, respHeaders, respCookies, body});
+	useConsoleLog('EndpointCase.in:', {value, detail, activeAccess});
+	useConsoleLog('EndpointCase.out:', {reqHeaders, reqCookies, params, respHeaders, respCookies, body});
 
 	return (
 		<Card
