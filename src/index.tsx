@@ -14,3 +14,6 @@ render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
+
+// Print git tag/hash to console
+console.log("APPLICATION VERSION: ", process.env.REACT_APP_VERSION);
