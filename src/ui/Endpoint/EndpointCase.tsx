@@ -32,7 +32,9 @@ export function EndpointCase(props: EndpointCaseProps) {
 	const nav = useNav();
 	const detail = scheme.detail[value.status];
 	const reqHeaders = renderParams(value.headers?.request, detail.request.headers, activeAccess?.headers, ': ');
+	const reqCookies = renderParams(value.cookies?.request, detail.request.cookies, activeAccess?.cookies, ': ');
 	const respHeaders = renderParams(value.headers?.response, detail.response.headers, undefined, ': ');
+	const respCookies = renderParams(value.cookies?.response, detail.response.cookies, undefined, ': ');
 	const params = renderParams(value.params, detail.request.params, activeAccess?.params);
 	const body = renderJSONObject(detail.response.body, value.body, '  ');
 	const isOK = value.status === 'ok';
@@ -43,6 +45,9 @@ export function EndpointCase(props: EndpointCaseProps) {
 		onSelect={setActiveAccess}
 	/>;
 	const codeStatus = RPC_STATUS_TO_CODE[value.status];
+
+	useConsoleLog('EndpointCase.in:', {value, detail, activeAccess});
+	useConsoleLog('EndpointCase.out:', {reqHeaders, reqCookies, params, respHeaders, respCookies, body});
 
 	return (
 		<Card
@@ -80,29 +85,20 @@ export function EndpointCase(props: EndpointCaseProps) {
 		>
 			{value.description && <Description value={value.description}/>}
 
-			{reqHeaders && <RequestSection
-				bg="#f5f5f5"
-				name="request → headers"
-				extra={accessSelector}
-			>
-				{reqHeaders}
-			</RequestSection>}
-
-			{params && <RequestSection
-				bg="#fafafa"
-				name="request → params"
-				extra={!reqHeaders && accessSelector}
-			>
-				{params}
-			</RequestSection>}
-
-			{respHeaders && <RequestSection
-				bg="#f5f5f5"
-				name="response → headers"
-				extra={!reqHeaders && !params && accessSelector}
-			>
-				{respHeaders}
-			</RequestSection>}
+			{[
+				{name: 'request → headers',  children: reqHeaders},
+				{name: 'request → cookies',  children: reqCookies},
+				{name: 'request → params',   children: params},
+				{name: 'response → headers', children: respHeaders},
+				{name: 'response → cookies', children: respCookies},
+			].filter(i => !!i.children).map((props, idx) => 
+				<RequestSection
+					{...props}
+					key={idx}
+					bg={idx % 2 ? '#f5f5f5' : '#fafafa'}
+					extra={!idx && accessSelector}
+				/>
+			)}
 
 			{(codeStatus < 300 || codeStatus >= 400) && <RequestSection name="response">
 				<CodeHighlight value={``
@@ -454,4 +450,10 @@ function Description({value}: {value: string}) {
 
 function isObject(val: unknown): val is object {
 	return Object.prototype.toString.call(val) === '[object Object]'
+}
+
+function useConsoleLog(...args: any[]) {
+	React.useEffect(() => {
+		console.log(...args);
+	}, args);
 }

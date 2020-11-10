@@ -1,17 +1,15 @@
-FROM node:latest as dev
+FROM node:latest as base
 WORKDIR /tmp
 COPY ./package*.json ./
 RUN npm install
 COPY . .
-CMD HOST=0.0.0.0 PORT=80 npm start
+
+FROM base as dev
+CMD HOST=0.0.0.0 PORT=80 npm run-script start
 EXPOSE 80
 
-FROM node:latest as builder
-WORKDIR /tmp
-COPY ./package*.json ./
-RUN npm install
-COPY . .
-RUN npm build
+FROM base as builder
+RUN npm run-script build
 
 FROM nginx:latest as release
 COPY --from=builder /tmp/docs /var/www
