@@ -154,6 +154,7 @@ export type ReflectItem = {
 	tags: string;
 	comment: string;
 	required: boolean;
+	deprecated: boolean;
 	nested: ReflectItem[];
 };
 

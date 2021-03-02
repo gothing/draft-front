@@ -262,8 +262,12 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 		</div>;
 	}
 	
-	return <div key={key}>
-		<div>/* {ref.comment}. <b>{getRefType(ref)}</b> */</div>
+	return <div key={key} className={`endpoint-param-deprecated-${!!ref.deprecated}`}>
+		<div className="endpoint-param-comment">
+			/*&nbsp;
+			{ref.deprecated && <Tag color="warning">deprecated</Tag>}
+			{ref.comment}. <b>{getRefType(ref)}</b> */
+		</div>
 		<b>{skey}</b>
 		{sep}
 		{typeof val === 'string' ? <span title={val} className="endpoint-param-value">{val}</span> : val}
