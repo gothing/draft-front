@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Tag, Card, message, Dropdown, Menu, Tooltip, Modal, Input, Space, Checkbox, Typography } from 'antd';
+import { Tag, Card, message, Dropdown, Menu, Tooltip, Modal, Input, Checkbox } from 'antd';
 import { LinkOutlined, QuestionCircleFilled, CodeOutlined } from '@ant-design/icons';
-import { Status } from '../Status/Status';
+import { Status, TagDeprecated } from '../Status/Status';
 import { getCaseURL, copyToClipboard, useNav, markdown } from '../../util';
 import { RPC_STATUS_TO_CODE } from '../../rpc';
 import { SchemeCase, ReflectItemMap, ReflectItem, GroupEntry, GroupConfig, AccessConfig, AccessExtraConfig, AccessExtraItemValue, JSONSchemeDetail } from '../../typings';
@@ -70,9 +70,15 @@ export function EndpointCase(props: EndpointCaseProps) {
 				>
 					<LinkOutlined/>
 				</span>
-				<a href={href}>{value.name}</a><br/>
+				
+				<div>
+					{value.deprecated && <TagDeprecated/>}
+					<a href={href}>{value.name}</a>
+				</div>
+
 				<Status name={value.status}/>
 				<Tag>{value.method}</Tag>
+
 				<span>
 					{' → '}&nbsp;
 					<EndpointURL
@@ -265,7 +271,7 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 	return <div key={key} className={`endpoint-param-deprecated-${!!ref.deprecated}`}>
 		<div className="endpoint-param-comment">
 			/*&nbsp;
-			{ref.deprecated && <Tag color="warning">deprecated</Tag>}
+			{ref.deprecated && <TagDeprecated/>}
 			{ref.comment}. <b>{getRefType(ref)}</b> */
 		</div>
 		<b>{skey}</b>

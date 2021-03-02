@@ -2,6 +2,7 @@ import * as React from 'react';
 import { Card, Result, Tree } from 'antd';
 import { useAppStore } from '../../store/store';
 import { fuzzyHL, getBaseURL, useNav } from '../../util';
+import { BadgeDeprecated } from '../Status/Status';
 
 export function EndpointAll() {
 	const {
@@ -38,6 +39,7 @@ export function EndpointAll() {
 					key={getBaseURL(group, e)}
 					title={<>
 						<a>{name || e.name}</a>
+						{e.scheme?.deprecated && <span> <BadgeDeprecated/></span>}
 						<span> — {descr || e.scheme!.name}</span>
 					</>}
 				/>

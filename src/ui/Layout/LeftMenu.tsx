@@ -3,6 +3,7 @@ import { Menu, Divider } from 'antd';
 import { SelectParam } from 'antd/lib/menu';
 import { useAppStore } from '../../store/store';
 import { getGroupEntryKey } from '../../util';
+import { BadgeDeprecated } from '../Status/Status';
 
 export function LeftMenu() {
 	const {
@@ -39,6 +40,7 @@ export function LeftMenu() {
 					title={e.scheme!.description || e.scheme!.name}
 				>
 					{e.scheme!.name}
+					{e.scheme!.deprecated && <span> <BadgeDeprecated/></span>}
 				</Menu.Item>
 			);
 		} else if (e.type === 'HR') {

@@ -90,6 +90,7 @@ export type JSONScheme = {
 	name: string;
 	project: string;
 	description: string;
+	deprecated: boolean;
 	detail: {
 		[status:string]: JSONSchemeDetail;
 	};
@@ -99,6 +100,7 @@ export type JSONScheme = {
 export type SchemeCase = {
 	name: string;
 	description: string;
+	deprecated: boolean;
 	access: string;
 	status: string;
 	method: string;

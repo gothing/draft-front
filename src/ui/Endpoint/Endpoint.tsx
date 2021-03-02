@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Result, Breadcrumb, Typography, Space } from 'antd';
 import { useAppStore } from '../../store/store';
 import { GroupEntry } from '../../typings';
-import { Status } from '../Status/Status';
+import { BadgeDeprecated, Status, TagDeprecated } from '../Status/Status';
 import { EndpointCase } from './EndpointCase';
 import { getGroupEntryKey, getCaseURL } from '../../util';
 import Paragraph from 'antd/lib/typography/Paragraph';
@@ -59,6 +59,7 @@ export function Endpoint({id}: Endpoint) {
 	return (
 		<>
 			<Breadcrumb style={{marginBottom: 20}}>
+				{scheme.deprecated && <Breadcrumb.Item><TagDeprecated/></Breadcrumb.Item>}
 				<Breadcrumb.Item>{group.name}</Breadcrumb.Item>
 				{project && <Breadcrumb.Item>{project.name}</Breadcrumb.Item>}
 				<Breadcrumb.Item>{scheme.name}</Breadcrumb.Item>
@@ -72,6 +73,7 @@ export function Endpoint({id}: Endpoint) {
 				{scheme.cases.map((c, i) => (
 					<li key={i}>
 						<a href={getCaseURL(group, entry, c)}>{c.name}</a>&nbsp;
+						{(scheme.deprecated || c.deprecated) && <BadgeDeprecated/>}
 						<Status name={c.status} badge/> 
 					</li>
 				))}
