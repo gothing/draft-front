@@ -208,25 +208,37 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 		}
 
 		const prop = [`${nind}"${key}": ${val}`];
-		refVal && prop.unshift( `${nind}/* ${refVal.comment}. <b>${getRefType(refVal)}</b> */`)
+
+		if (refVal) {
+			prop.unshift(`${nind}/* ${refVal.comment}. <b>${getRefType(refVal)}</b> */`)
+		}
 
 		return prop.join('\n');
 	}).join(',\n')}\n${ind}}`;
 }
 
-function getRefType({type, meta_type, enum:ev}: ReflectItem) {
+function getRefType({type, meta_type, enum:ev, tags}: ReflectItem) {
+	let retVal = type;
+
 	switch (type) {
 		case 'map':
-			return `map[${ev ? `${ ev.join(' | ') }` : 'string'}]string`;
+			retVal = `map[${ev ? `${ ev.join(' | ') }` : 'string'}]string`;
+			break;
 
 		case 'struct':
-			return 'object';
+			retVal = 'object';
+			break;
 
 		case 'slice':
-			return `${ev ? `Enum<${ ev.join(' | ') }>` : meta_type}[]`;
+			retVal = `${ev ? `Enum<${ ev.join(' | ') }>` : meta_type}[]`;
+			break;
 	}
 
-	return type;
+	if (tags && tags.includes('omitempty')) {
+		retVal = `undefined | ${retVal}`;
+	}
+
+	return retVal;
 }
 
 function renderParams(
