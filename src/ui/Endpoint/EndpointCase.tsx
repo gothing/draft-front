@@ -72,7 +72,7 @@ export function EndpointCase(props: EndpointCaseProps) {
 				</span>
 				
 				<div>
-					{value.deprecated && <TagDeprecated/>}
+					{(scheme.deprecated || value.deprecated) && <TagDeprecated/>}
 					<a href={href}>{value.name}</a>
 				</div>
 
