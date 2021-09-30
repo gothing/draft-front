@@ -188,6 +188,7 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 			});
 		} else if (cache === null) {
 			loading = true;
+			allLoaded = false;
 		}
 		
 		return cache!;
