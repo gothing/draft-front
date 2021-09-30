@@ -64,7 +64,7 @@ function AppReady(props: {state: AppState}) {
 					...Object(arguments[0]),
 				});
 			}
-		}, [state]),
+		}, [state, setState]),
 	};
 
 	useHistory(state);
@@ -73,7 +73,7 @@ function AppReady(props: {state: AppState}) {
 
 		console.log('HashChange:', parsed, state.groups);
 
-		setState({
+		store.updateState({
 			...state,
 			...parsed,
 		});
@@ -161,12 +161,16 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 		return;
 	}
 
+	console.log('Autload group:', state.activeGroup, group);
+
 	let loading = false;
+	let allLoaded = true;
 	const entries = group.entries.map((entry) => {
 		const cache = groupEntryCache[entry];
 		
 		if (cache === void 0) {
 			loading = true;
+			allLoaded = false;
 			groupEntryCache[entry] = null;
 			
 			fetch(entry).then(r => r.json()).then((group: GroupEntry) => {
@@ -189,8 +193,8 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 		return cache!;
 	});
 
-	if (loading !== state.loading) {
-		if (loading) {
+	if (loading !== state.loading || allLoaded) {
+		if (loading && !allLoaded) {
 			updateState({ loading: true });
 		} else {
 			updateState({
