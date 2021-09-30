@@ -73,11 +73,11 @@ function AppReady(props: {state: AppState}) {
 
 		console.log('HashChange:', parsed, state.groups);
 
-		store.updateState({
+		setState({
 			...state,
 			...parsed,
 		});
-	}, [state]);
+	}, [state, setState]);
 	useGroupEntryAutoload(store);
 	useAutoScroll(state.loading);
 	
