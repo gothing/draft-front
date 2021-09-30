@@ -44,6 +44,7 @@ export type AccessExtraItemValue = {
 
 export type AppState = {
 	loading: boolean;
+	loadedGroup?: string;
 
 	search: string;
 	queryString: string;

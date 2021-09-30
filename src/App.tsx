@@ -164,13 +164,13 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 	console.log('Autload group:', state.activeGroup, group);
 
 	let loading = false;
-	let allLoaded = true;
+	let loadedGroup = group.id;
 	const entries = group.entries.map((entry) => {
 		const cache = groupEntryCache[entry];
 		
 		if (cache === void 0) {
 			loading = true;
-			allLoaded = false;
+			loadedGroup = '';
 			groupEntryCache[entry] = null;
 			
 			fetch(entry).then(r => r.json()).then((group: GroupEntry) => {
@@ -188,18 +188,19 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 			});
 		} else if (cache === null) {
 			loading = true;
-			allLoaded = false;
+			loadedGroup = '';
 		}
 		
 		return cache!;
 	});
 
-	if (loading !== state.loading || allLoaded) {
-		if (loading && !allLoaded) {
+	if (loading !== state.loading || loadedGroup) {
+		if (loading && !loadedGroup) {
 			updateState({ loading: true });
-		} else {
+		} else if (state.loadedGroup !== loadedGroup) {
 			updateState({
 				loading: false,
+				loadedGroup,
 				activeGroupEntries: entries,
 			});
 		}
