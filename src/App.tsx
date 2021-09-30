@@ -69,9 +69,13 @@ function AppReady(props: {state: AppState}) {
 
 	useHistory(state);
 	useHashChange(() => {
+		const parsed = parseHistoryParams(state);
+
+		console.log('HashChange:', parsed, state.groups);
+
 		setState({
 			...state,
-			...parseHistoryParams(state),
+			...parsed,
 		});
 	}, [state]);
 	useGroupEntryAutoload(store);
@@ -153,6 +157,7 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 	const group = state.groups[state.activeGroup!];
 
 	if (!group) {
+		console.warn('Group not found:', state.activeGroup)
 		return;
 	}
 
@@ -163,6 +168,7 @@ function useGroupEntryAutoload({state, updateState}: AppStore) {
 		if (cache === void 0) {
 			loading = true;
 			groupEntryCache[entry] = null;
+			
 			fetch(entry).then(r => r.json()).then((group: GroupEntry) => {
 				groupEntryCache[entry] = group;
 				
