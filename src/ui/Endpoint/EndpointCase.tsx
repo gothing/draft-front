@@ -263,7 +263,7 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 			<b>{skey}</b>{sep}<CodeHighlight value={val} />
 		</div>;
 	} else {
-		val = JSON.stringify(rawVal);
+		val = JSON.stringify(rawVal, null, '\t');
 	}
 
 	return <div key={key}>
