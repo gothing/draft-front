@@ -209,10 +209,23 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 function getRefType({type, meta_type, enum:ev}: ReflectItem) {
 	switch (type) {
 		case 'map':
-			return `map[${ev ? `${ ev.join(' | ') }` : 'string'}]string`;
+			if (!ev || ev.length != 2) {
+				return meta_type ? meta_type : `map[string]string`;
+			}
+
+			const key = ev[0] ? typeof ev[0] === 'string' ?
+				ev[0] :
+				`Enum< ${ev[0].join(' | ')} >` :
+				'any';
+			const value = ev[1] ? typeof ev[1] === 'string' ?
+				ev[1] :
+				`Enum< ${ev[1].join(' | ')} >` :
+				'any';
+
+			return `map[${key}]${value}`;
 
 		case 'struct':
-			return 'object';
+			return meta_type ? meta_type : 'object';
 
 		case 'slice':
 			return `${ev ? `Enum<${ ev.join(' | ') }>` : meta_type}[]`;
