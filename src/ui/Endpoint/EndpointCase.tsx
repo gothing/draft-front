@@ -9,7 +9,6 @@ import { CodeHighlight } from '../CodeHighlight/CodeHighlight';
 
 import './EndpointCase.css';
 import { useAppState, useAppStore } from '../../store/store';
-import { func } from 'prop-types';
 
 export type EndpointCaseProps = {
 	group: GroupConfig;
