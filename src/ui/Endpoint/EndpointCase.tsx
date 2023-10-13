@@ -91,7 +91,7 @@ export function EndpointCase(props: EndpointCaseProps) {
 				{name: 'request → params',   children: params},
 				{name: 'response → headers', children: respHeaders},
 				{name: 'response → cookies', children: respCookies},
-			].filter(i => !!i.children).map((props, idx) => 
+			].filter(i => !!i.children).map((props, idx) =>
 				<RequestSection
 					{...props}
 					key={idx}
@@ -147,7 +147,7 @@ function AccessSelector({type, active, onSelect}: AccessSelectorProps) {
 		accessRights,
 	} = useAppState();
 	const access = accessRights[type];
-	
+
 	if (!access) {
 		return (
 			<div className="access-selector-badge">
@@ -156,7 +156,7 @@ function AccessSelector({type, active, onSelect}: AccessSelectorProps) {
 		);
 	}
 
-	return <div className="access-selector">{access.extra.map((item) => 
+	return <div className="access-selector">{access.extra.map((item) =>
 		<div
 			className={`
 				access-selector-tab
@@ -248,9 +248,11 @@ function renderParams(
 
 function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=') {
 	const skey = `${key}${ref.required ? '' : '?'}`;
-	let val: any = `${rawVal}`;
+	let val: any = null;
 
-	if (rawVal && typeof rawVal === 'object' && ref.nested.length) {
+	if (rawVal && typeof rawVal === 'string') {
+		val = rawVal;
+	} else if (rawVal && typeof rawVal === 'object' && ref.nested && ref.nested.length) {
 		val = renderJSONObject(ref.nested.reduce((map, item) => {
 			map[item.name] = item;
 			return map;
@@ -258,15 +260,17 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 
 		return <div key={key}>
 			<div>/* {ref.comment} */</div>
-			<b>{skey}</b>{sep}<CodeHighlight value={val}/>
+			<b>{skey}</b>{sep}<CodeHighlight value={val} />
 		</div>;
+	} else {
+		val = JSON.stringify(rawVal);
 	}
-	
+
 	return <div key={key}>
 		<div>/* {ref.comment}. <b>{getRefType(ref)}</b> */</div>
 		<b>{skey}</b>
 		{sep}
-		{typeof val === 'string' ? <span title={val} className="endpoint-param-value">{val}</span> : val}
+		<span title={val} className="endpoint-param-value">{val}</span>
 	</div>;
 }
 
@@ -287,9 +291,9 @@ function EndpointURL({entry, scheme, access}: EndpointURLProps) {
 		project.host && hosts.push(project.host);
 		project.host_rc && hosts.push(project.host_rc);
 		project.host_dev && hosts.push(project.host_dev);
-		
+
 		activeHost = hosts.includes(activeHost) ? activeHost : (project.host_rc || hosts[0]);
-	
+
 		if (hosts.length > 1) {
 			const menu = (
 				<Menu onClick={({key}) => { setActiveHost(key); }}>{
@@ -301,7 +305,7 @@ function EndpointURL({entry, scheme, access}: EndpointURLProps) {
 					<span className="endpoint-case-host">{activeHost}</span>
 				</Dropdown>
 			);
-			
+
 			host = <>https://{selector}</>;
 		} else if (hosts.length) {
 			host = <>https://{hosts[0]}</>;
@@ -353,7 +357,7 @@ function RequestFactory(props: RequestFactoryProps) {
 				p[el.name] = [`${el.type === 'checkbox' ? el.checked : el.value}`];
 				return p;
 			}, {} as any);
-			
+
 			window.open(`/godraft:request/?data=${encodeURIComponent(JSON.stringify({
 				project,
 				access: scheme.access,
