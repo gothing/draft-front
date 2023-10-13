@@ -9,6 +9,7 @@ import { CodeHighlight } from '../CodeHighlight/CodeHighlight';
 
 import './EndpointCase.css';
 import { useAppState, useAppStore } from '../../store/store';
+import { func } from 'prop-types';
 
 export type EndpointCaseProps = {
 	group: GroupConfig;
@@ -263,7 +264,7 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 			<b>{skey}</b>{sep}<CodeHighlight value={val} />
 		</div>;
 	} else {
-		val = JSON.stringify(rawVal, null, '\t');
+		val = renderJSONScalar(rawVal);
 	}
 
 	return <div key={key}>
@@ -272,6 +273,20 @@ function renderParamsItem(key: string, rawVal: any, ref: ReflectItem, sep = '=')
 		{sep}
 		<span title={val} className="endpoint-param-value">{val}</span>
 	</div>;
+}
+
+function renderJSONScalar(rawVal: any) {
+	const stripTab = (s: string) => s.replace(/^\t+/, '');
+	const countTabs = (s: string) => s.split('').
+		reduce(
+			({ counter, stop }, c) => (c === '\t' && !stop)
+				? { counter: counter + 1, stop: false }
+				: { counter: counter, stop: true }, { counter: 0, stop: false }
+		).counter;
+
+	return JSON.stringify(rawVal, null, '\t').
+		split('\n').
+		map((s) => <p style={{margin: 0, paddingLeft: `${countTabs(s)}em`}}>{stripTab(s)}</p>);
 }
 
 type EndpointURLProps = {
