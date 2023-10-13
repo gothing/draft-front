@@ -193,13 +193,10 @@ function renderJSONObject(ref: ReflectItemMap, raw: any, ind = '') {
 				return map;
 			}, {} as ReflectItemMap);
 			val = renderJSONObject(nref, val, nind);
-		} else if (isObject(val)) {
-			val = JSON
-				.stringify(val, null, (nind + ind).length)
-				.replace(/\}$/, `${nind}}`)
-			;
 		} else {
-			val = JSON.stringify(val);
+			val = JSON
+				.stringify(val, null, ind.length)
+				.replace(/\n/g, `\n${nind}`);
 		}
 
 		const prop = [`${nind}"${key}": ${val}`];
